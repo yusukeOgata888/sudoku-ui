@@ -1,0 +1,14 @@
+.main {
+    height: 100%;
+    background-color: var(--main-color);
+}
+
+.contents {
+    display: flex;
+    margin-top: 7rem;
+    justify-content: center;
+}
+
+.margin_left_5 {
+    margin-left: 5rem;
+}

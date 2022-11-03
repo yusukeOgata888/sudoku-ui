@@ -1,0 +1,45 @@
+:root {
+    height: 100%;
+    --main-color: #330066;
+    --secondary-color: #DCC2FF;
+}
+
+input {
+    border: 5px solid #330066;
+}
+
+input:hover {
+    border: 5px solid transparent;
+    border-radius: 0.5rem;
+    border-color: var(--secondary-color);
+}
+
+.btn {
+    font-size: 1.3rem;
+    height: 2.4rem;
+    min-width: 8rem;
+    border-radius: 3px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: var(--main-color);
+    border: none;
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: var(--secondary-color);
+}
+
+.btn-secondary {
+    color: var(--main-color);
+    background-color: #fff;
+    border: var(--main-color);
+}
+
+.btn-secondary:hover {
+    border: var(--secondary-color);
+}

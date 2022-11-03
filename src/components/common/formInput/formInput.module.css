@@ -1,0 +1,11 @@
+.input {
+    height: 2rem;
+    width: 30rem;
+    margin-bottom: 1rem;
+}
+
+.label {
+    color: #7B68EE;
+    font-size: 1.3rem;
+    font-weight: bold;
+}

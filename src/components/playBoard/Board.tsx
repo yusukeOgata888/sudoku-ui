@@ -1,32 +1,26 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-// import axios from "axios";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import {
-  // fetchOwnAttributeSelector,
+  fetchNumberAtPushedSelector,
+  fetchNumberForViewSelector,
+  fetchOwnAttributeSelector,
   setOwnAttributeData,
+  setNumberForView,
+  setNumberAtPushed,
 } from "../../ducks/playBoard";
-import { CellAttribute, CellInfo } from "../../ducks/playBoard/types";
+import { CellAttribute } from "../../ducks/playBoard/types";
 import { AppThunkDispatch } from "../../ducks/RootReducer";
 import classes from "./Board.module.css";
 
-type Props = {
-  cellValue:string
-}
 /**
  * 数独ボードのコンポーネント
  * @returns 9x9のボード
  */
-const Board = ({cellValue}:Props): JSX.Element => {
+const Board = (): JSX.Element => {
   const dispatch: AppThunkDispatch = useDispatch();
-  let initCellInfo:CellInfo[]=[]
-  for (var i = 1; i < 82; i++) {
-    initCellInfo.push({
-      index: i,
-      value: '',
-    })
-  }
   const initAttributes: CellAttribute = {
     row: 0,
     col: 0,
@@ -39,17 +33,37 @@ const Board = ({cellValue}:Props): JSX.Element => {
   const [otherAttributesList, setOtherAttributesList] = useState(
     initOtherAttributesList
   );
-  const [cellsInfo, setCellsInfo] = useState<CellInfo[]>(initCellInfo);
+  const [init, setInit] = useState(true);
 
-  // type boardResponseModel = {
-  //   CellIndex: number,
-  //   CellNumber: number
-  // }
+  const numberAtPushed = fetchNumberAtPushedSelector();
+  const numberForView = fetchNumberForViewSelector();
 
-  // const [responseData, setresponseData] = useState(null as unknown as boardResponseModel[])
-  
-  const getTest = async () =>{
-    //  axios.get(`http://localhost:8080/users`).then(res=>{setresponseData(res.data)}).catch(err=>{console.log('erro:',err)})
+  type boardResponseModel = {
+    CellIndex: number;
+    CellNumber: number;
+  };
+
+  const [responseData, setresponseData] = useState([] as boardResponseModel[]);
+
+  const initialize = () => {
+    let tmp: Number[] = [];
+    for (var i = 1; i < 82; i++) {
+      tmp[i] = 0;
+    }
+    setNumberForView(tmp);
+
+    setInit(false);
+  };
+
+  const getTest = async () => {
+    axios
+      .get(`http://127.0.0.1:8080/users`)
+      .then((res) => {
+        setresponseData(res.data);
+      })
+      .catch((err) => {
+        console.log("erro:", err);
+      });
   };
 
   // 引数の行・列・3X3に属する値を全て返す処理
@@ -122,14 +136,16 @@ const Board = ({cellValue}:Props): JSX.Element => {
     }
   };
 
-  // const setValue = (i:number) => {
-  //  var res = '';
-  //  if(!responseData){
-  //    return res;
-  //  }
-  // responseData.forEach((item)=>{if(item.CellIndex === i){res = item.CellNumber.toString()}})
-  // return res
-  // }
+  const setValue = async () => {
+    let dataList: Number[] = numberForView;
+
+    if (selectedCell && numberAtPushed) {
+      dataList[Number(selectedCell)] = numberAtPushed as Number;
+    }
+
+    dispatch(setNumberForView(dataList));
+    dispatch(setNumberAtPushed(0));
+  };
 
   // 9x9マスのボードを生成する処理
   const createCell = () => {
@@ -140,6 +156,7 @@ const Board = ({cellValue}:Props): JSX.Element => {
       if (i % 9 === 1) {
         cellTdList = [];
       }
+
       cellTdList.push(
         <td
           onClick={(e) => {
@@ -157,7 +174,7 @@ const Board = ({cellValue}:Props): JSX.Element => {
           id={i.toString()}
           key={i}
         >
-        {cellsInfo[i-1].value}
+          {numberForView[i]}
         </td>
       );
       if (i % 9 === 0) {
@@ -173,21 +190,26 @@ const Board = ({cellValue}:Props): JSX.Element => {
   }, [ownAttribute]);
 
   useEffect(() => {
-    let newState = cellsInfo
-    newState.forEach((cell)=>{
-      if (cell.index.toString() === selectedCell){
-        cell.value = cellValue
-      }
-    })
-    setCellsInfo(newState)
-  },[cellValue])
+    setValue();
+    setOtherAttributesList(getOtherAttributesList(ownAttribute));
+  }, [numberAtPushed]);
+
+  useEffect(() => {
+    initialize();
+  }, [init]);
 
   return (
     <>
-    <Table className={classes.table}>
-      <tbody>{createCell()}</tbody>
-    </Table>
-    <Button onClick={()=>{getTest()}}>通信</Button>
+      <Table className={classes.table}>
+        <tbody>{createCell()}</tbody>
+      </Table>
+      <Button
+        onClick={() => {
+          getTest();
+        }}
+      >
+        通信
+      </Button>
     </>
   );
 };

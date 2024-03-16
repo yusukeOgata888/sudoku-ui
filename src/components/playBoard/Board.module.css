@@ -19,7 +19,17 @@
 
 .primaryCell {
     background-color: var(--main-color);
-    color: #FFF;
+    color: hsl(0, 0%, 100%);
+}
+
+.fixedCell {
+    background-color: rgb(66, 66, 224);
+    color: hsl(0, 0%, 100%);
+}
+
+.fixedSecondaryCell {
+    background-color: rgb(189, 136, 250);
+    color: hsl(0, 0%, 100%);
 }
 
 .otherAttributes {

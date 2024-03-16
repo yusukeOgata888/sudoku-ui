@@ -42,10 +42,26 @@ const Board = (): JSX.Element => {
     CellIndex: number;
     CellNumber: number;
   };
-
   const [responseData, setresponseData] = useState([] as boardResponseModel[]);
 
+  const [fixedList, setfixedList] = useState([] as boolean[]);
+
+  const createFixedList = () => {
+    let fixedList = [];
+    for (let i = 1; i < 82; i++) {
+      const randValue = Math.random();
+      if (0.5 > randValue) {
+        fixedList.push(true);
+      } else {
+        fixedList.push(false);
+      }
+    }
+    setfixedList(fixedList);
+  };
+
   const initialize = () => {
+    console.log(window.location.origin)
+    createFixedList();
     let tmp: Number[] = [];
     for (var i = 1; i < 82; i++) {
       tmp[i] = 0;
@@ -139,10 +155,14 @@ const Board = (): JSX.Element => {
   const setValue = async () => {
     let dataList: Number[] = numberForView;
 
+    if (fixedList[Number(selectedCell)]) {
+      return;
+    }
+
     if (selectedCell && numberAtPushed) {
       dataList[Number(selectedCell)] = numberAtPushed as Number;
     }
-
+    console.log("datalist", dataList);
     dispatch(setNumberForView(dataList));
     dispatch(setNumberAtPushed(0));
   };
@@ -165,10 +185,22 @@ const Board = (): JSX.Element => {
             dispatch(setOwnAttributeData(ownAttribute));
           }}
           className={`${classes.cell} ${
-            selectedCell === i.toString() ? classes.primaryCell : ""
+            fixedList[i] ? classes.fixedCell : ""
           } ${
-            otherAttributesList.includes(i) && selectedCell !== i.toString()
+            selectedCell === i.toString() && !fixedList[i]
+              ? classes.primaryCell
+              : ""
+          } ${
+            otherAttributesList.includes(i) &&
+            selectedCell !== i.toString() &&
+            !fixedList[i]
               ? classes.otherAttributes
+              : ""
+          } ${
+            otherAttributesList.includes(i) &&
+            selectedCell !== i.toString() &&
+            fixedList[i]
+              ? classes.fixedSecondaryCell
               : ""
           }`}
           id={i.toString()}

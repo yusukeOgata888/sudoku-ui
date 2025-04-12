@@ -1,57 +1,9 @@
-.cell {
-    height: 4.5rem;
-    width: 4.5rem;
-    border: 3px solid var(--main-color);
-    color: var(--main-color);
-    text-align: center;
-    font-weight: bold;
-    font-size: 2rem;
+.contents {
+    display: flex;
+    margin-top: 20rem;
+    justify-content: center;
 }
 
-.table {
-    border-collapse: collapse;
-    border: 1px solid var(--main-color);
-    margin-left: 3rem;
-    margin-right: 1rem;
-    margin-top: 3rem;
-    margin-bottom: 3rem;
-}
-
-.primaryCell {
-    background-color: var(--main-color);
-    color: hsl(0, 0%, 100%);
-}
-
-.fixedCell {
-    background-color: rgb(113, 110, 115);
-    color: hsl(0, 0%, 100%);
-}
-
-.fixedSecondaryCell {
-    background-color: rgb(189, 136, 250);
-    color: hsl(0, 0%, 100%);
-}
-
-.otherAttributes {
-    background-color: var(--secondary-color);
-}
-
-.selectedNumber {
-    color: var(--secondary-color);
-}
-
-.numberToSelect {
-    position: relative;
-    top: 0;
-    background-color: var(--main-color);
-    color: var(--secondary-color);
-    border: 4px solid var(--secondary-color);
-    height: 6rem;
-    width: 6rem;
-    transition: all .3s;
-}
-
-.numberToSelect:hover {
-    top: -3px;
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+.margin_left_5 {
+    margin-left: 5rem;
 }

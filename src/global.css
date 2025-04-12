@@ -1,11 +1,11 @@
 :root {
     height: 100%;
-    --main-color: #330066;
-    --secondary-color: #DCC2FF;
+    --main-color: #f2f8b0;
+    --secondary-color: #bcfcef;
 }
 
 input {
-    border: 5px solid #330066;
+    border: 5px solid #034213;
 }
 
 input:hover {

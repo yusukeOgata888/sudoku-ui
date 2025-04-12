@@ -28,7 +28,7 @@ const Login = (): JSX.Element=> {
           <Row>
             <Button
               className="btn-secondary"
-              onClick={() => history.push(PAGE_PATH_URL.HOME)}
+              onClick={() => history.push(PAGE_PATH_URL.MATCH_MAKING)}
             >
               ログイン
             </Button>

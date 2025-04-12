@@ -2,26 +2,22 @@ import React, { useState } from "react";
 import { Button, Container, Row } from "react-bootstrap";
 import classes from "./MatchMaking.module.css";
 import Title from "../common/title/Title";
-import { PAGE_TITLE } from "../../utilities/const";
+import { PAGE_PATH_URL,PAGE_TITLE } from "../../utilities/const";
+import { SessionResult } from "../../ducks/matchMaking/types";
+import Spinner from "../common/utils/Spinner";
+import { useHistory } from "react-router";
 
-interface SessionResult {
-  session_id: string;
-  player1: {
-    id: string;
-    rating: number;
-  };
-  player2: {
-    id: string;
-    rating: number;
-  };
-}
 
 const MatchMaking = (): JSX.Element => {
+  const history = useHistory();
   const [userId, setUserId] = useState<string>("");
   const [session, setSession] = useState<SessionResult | null>(null);
-  const [status, setStatus] = useState<string>("");
-
+  const [status, setStatus] = useState<string>("準備OK");
+  const [isMatching, setIsMatching] = useState<boolean>(false);
+  const [isMatched, setIsMatched] = useState<boolean>(false);
   const handleMatchmaking = async () => {
+    setStatus("マッチング待機中...");
+    setIsMatching(true);
     if (!userId) {
       setStatus("ユーザーIDを入力してください");
       return;
@@ -42,20 +38,18 @@ const MatchMaking = (): JSX.Element => {
       if (!response.ok) {
         const errText = await response.text();
         setStatus(`Error: ${errText}`);
+        setIsMatching(false);
+        setStatus("準備OK");
         return;
       }
 
-      const data = await response.json();
-      // "waiting" ステータスが返された場合は後続処理を検討
-      if (data.status === "waiting") {
-        setStatus("マッチング待機中...");
-      } else {
-        setSession(data);
-        setStatus("マッチング成立！");
-      }
+      setStatus("マッチング成立！");
+      setIsMatching(false);
+      setIsMatched(true);
     } catch (error) {
       setStatus("通信エラー");
       console.error(error);
+      setIsMatching(false);
     }
   };
 
@@ -63,7 +57,7 @@ const MatchMaking = (): JSX.Element => {
     <div className={classes.main}>
       <Title titleName={PAGE_TITLE.MATCH_MAKING} />
       <div className={classes.contents}>
-        <div>
+      <div>
           <label htmlFor="userIdInput">ユーザーID: </label>
           <input
             id="userIdInput"
@@ -72,10 +66,10 @@ const MatchMaking = (): JSX.Element => {
             onChange={(e) => setUserId(e.target.value)}
           />
         </div>
-        <Button variant="secondary" onClick={handleMatchmaking}>
-          対戦開始
+        <Button className={`btn-main ${classes.margin_left_5}`}onClick={handleMatchmaking}>
+          {status}
         </Button>
-        <p>{status}</p>
+        {isMatching && <Spinner />}
         {session && (
           <div className={classes.sessionInfo}>
             <h3>セッション情報</h3>
@@ -84,6 +78,7 @@ const MatchMaking = (): JSX.Element => {
             <p>Player2: {session.player2.id}</p>
           </div>
         )}
+        {isMatched && history.push(PAGE_PATH_URL.HOME)}
       </div>
     </div>
   );

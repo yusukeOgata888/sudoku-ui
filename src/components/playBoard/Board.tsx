@@ -48,8 +48,16 @@ const Board = (): JSX.Element => {
   const [responseData, setResponseData] = useState([] as boardResponseModel[]);
   const [fixedList, setfixedList] = useState([] as boolean[]);
   
-  const socketUrl = `ws://${SOCKET_API_HOST.DEV}/ws?sessionId=${sessionId}`;
-  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
+  const socketUrl = `ws://${SOCKET_API_HOST.DEV}/ws?sessionID=${sessionId}`;
+  console.log("socketUrl", socketUrl);
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, {
+    shouldReconnect: () => true,
+    onOpen: () => {
+      console.log("WebSocket connected!");
+      sendMessage(JSON.stringify({ type: "getInitialBoard" })); // 初期ボード要求
+    },
+  
+  });
 
 
   const createFixedList = (fixedData: boardResponseModel[]) => {
@@ -60,16 +68,16 @@ const Board = (): JSX.Element => {
     setfixedList(fixedList);
   };
 
-  const initialize = (fixedData: boardResponseModel[]) => {
-    console.log(window.location.origin)
-    createFixedList(fixedData);
-    let tmp: Number[] = [];
-    for (var i = 1; i < 82; i++) {
-      tmp[i] = 0;
-    }
-    setNumberForView(tmp);
+  const initialize = (data: boardResponseModel[]) => {
+  let tmp: Number[] = Array(82).fill(0); // 0番目使わないため82個用意
 
-    setInit(false);
+  data.forEach(cell => {
+    tmp[cell.CellIndex] = cell.CellNumber;
+  });
+
+  dispatch(setNumberForView(tmp));
+  console.log("initialize完了", tmp);
+  setInit(false);
   };
 
   const getTest = async () => {
@@ -163,7 +171,6 @@ const Board = (): JSX.Element => {
     if (selectedCell && numberAtPushed) {
       dataList[Number(selectedCell)] = numberAtPushed as Number;
     }
-    console.log("datalist", dataList);
     dispatch(setNumberForView(dataList));
     dispatch(setNumberAtPushed(0));
   };
@@ -219,14 +226,13 @@ const Board = (): JSX.Element => {
   };
 
   useEffect(() => {
+    console.log("lastMessage", lastMessage);
     if (lastMessage !== null) {
       const data = JSON.parse(lastMessage.data);
-      if (data.responseData) {
-        setResponseData(data.responseData);
-        initialize(data.responseData);
-        console.log("responseData", data.responseData);
-        console.log("lastMessage", lastMessage);
-      }
+      setResponseData(data);           
+      initialize(data);               
+      console.log("responseData", data);
+      console.log("lastMessage", lastMessage);
     }
   }, [lastMessage]);
 
@@ -245,7 +251,6 @@ const Board = (): JSX.Element => {
       <Table className={classes.table}>
         <tbody>{createCell()}</tbody>
       </Table>
-      {sessionId}
       <Button
         onClick={() => {
           getTest();

@@ -6,6 +6,6 @@ export const setEmailAction = (
 ) => {
     return {
         type: SET_EMAIL_ACTION,
-        payload: email
+        payload: { email }
     }
 }

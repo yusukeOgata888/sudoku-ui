@@ -11,3 +11,12 @@ export enum PAGE_PATH_URL {
   CREATE_ACCOUNT = "/create-account",
   MATCH_MAKING = "/match-making",
 }
+
+
+export enum MATCHING_API_HOST {
+  DEV = "localhost:8080"
+}
+
+export enum SOCKET_API_HOST {
+  DEV = "localhost:8081"
+}

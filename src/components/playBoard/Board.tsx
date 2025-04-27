@@ -14,6 +14,9 @@ import {
 import { CellAttribute } from "../../ducks/playBoard/types";
 import { AppThunkDispatch } from "../../ducks/RootReducer";
 import classes from "./Board.module.css";
+import useWebSocket from 'react-use-websocket';
+import { SOCKET_API_HOST } from "../../utilities/const";
+import { fetchSessionId } from "../../ducks/matchMaking";
 
 /**
  * 数独ボードのコンポーネント
@@ -37,31 +40,29 @@ const Board = (): JSX.Element => {
 
   const numberAtPushed = fetchNumberAtPushedSelector();
   const numberForView = fetchNumberForViewSelector();
-
+  const sessionId: string = fetchSessionId();
   type boardResponseModel = {
     CellIndex: number;
     CellNumber: number;
   };
-  const [responseData, setresponseData] = useState([] as boardResponseModel[]);
-
+  const [responseData, setResponseData] = useState([] as boardResponseModel[]);
   const [fixedList, setfixedList] = useState([] as boolean[]);
+  
+  const socketUrl = `ws://${SOCKET_API_HOST.DEV}/ws?sessionId=${sessionId}`;
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
-  const createFixedList = () => {
-    let fixedList = [];
-    for (let i = 1; i < 82; i++) {
-      const randValue = Math.random();
-      if (0.5 > randValue) {
-        fixedList.push(true);
-      } else {
-        fixedList.push(false);
-      }
+
+  const createFixedList = (fixedData: boardResponseModel[]) => {
+    let fixedList = Array(81).fill(false);
+    for (let i = 0; i < fixedData.length; i++) {
+      fixedList[fixedData[i].CellIndex] = true;
     }
     setfixedList(fixedList);
   };
 
-  const initialize = () => {
+  const initialize = (fixedData: boardResponseModel[]) => {
     console.log(window.location.origin)
-    createFixedList();
+    createFixedList(fixedData);
     let tmp: Number[] = [];
     for (var i = 1; i < 82; i++) {
       tmp[i] = 0;
@@ -72,14 +73,14 @@ const Board = (): JSX.Element => {
   };
 
   const getTest = async () => {
-    axios
-      .get(`http://127.0.0.1:8080/users`)
-      .then((res) => {
-        setresponseData(res.data);
-      })
-      .catch((err) => {
-        console.log("erro:", err);
-      });
+    // axios
+    //   .get(`http://DEV+API_HOST.`)
+    //   .then((res) => {
+    //     setResponseData(res.data);
+    //   })
+    //   .catch((err) => {
+    //     console.log("erro:", err);
+    //   });
   };
 
   // 引数の行・列・3X3に属する値を全て返す処理
@@ -218,6 +219,18 @@ const Board = (): JSX.Element => {
   };
 
   useEffect(() => {
+    if (lastMessage !== null) {
+      const data = JSON.parse(lastMessage.data);
+      if (data.responseData) {
+        setResponseData(data.responseData);
+        initialize(data.responseData);
+        console.log("responseData", data.responseData);
+        console.log("lastMessage", lastMessage);
+      }
+    }
+  }, [lastMessage]);
+
+  useEffect(() => {
     setOtherAttributesList(getOtherAttributesList(ownAttribute));
   }, [ownAttribute]);
 
@@ -226,15 +239,13 @@ const Board = (): JSX.Element => {
     setOtherAttributesList(getOtherAttributesList(ownAttribute));
   }, [numberAtPushed]);
 
-  useEffect(() => {
-    initialize();
-  }, [init]);
 
   return (
     <>
       <Table className={classes.table}>
         <tbody>{createCell()}</tbody>
       </Table>
+      {sessionId}
       <Button
         onClick={() => {
           getTest();

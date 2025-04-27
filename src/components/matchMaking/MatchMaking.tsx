@@ -1,20 +1,25 @@
-import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
 import { Button, Container, Row } from "react-bootstrap";
 import classes from "./MatchMaking.module.css";
 import Title from "../common/title/Title";
-import { PAGE_PATH_URL,PAGE_TITLE } from "../../utilities/const";
+import { MATCHING_API_HOST, PAGE_PATH_URL,PAGE_TITLE } from "../../utilities/const";
 import { SessionResult } from "../../ducks/matchMaking/types";
+import { setSessionId } from "../../ducks/matchMaking/operations";
+import { AppThunkDispatch } from "../../ducks/RootReducer";
 import Spinner from "../common/utils/Spinner";
 import { useHistory } from "react-router";
 
 
 const MatchMaking = (): JSX.Element => {
   const history = useHistory();
+  const dispatch: AppThunkDispatch = useDispatch();
   const [userId, setUserId] = useState<string>("");
-  const [session, setSession] = useState<SessionResult | null>(null);
+  const [session, setSession] = useState<string>("");
   const [status, setStatus] = useState<string>("準備OK");
   const [isMatching, setIsMatching] = useState<boolean>(false);
   const [isMatched, setIsMatched] = useState<boolean>(false);
+
   const handleMatchmaking = async () => {
     setStatus("マッチング待機中...");
     setIsMatching(true);
@@ -27,7 +32,7 @@ const MatchMaking = (): JSX.Element => {
     const player = { id: userId, rating: 1500 };
 
     try {
-      const response = await fetch("http://localhost:8080/matchmaking", {
+      const response = await fetch(`http://${MATCHING_API_HOST.DEV}/matchmaking`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,6 +47,8 @@ const MatchMaking = (): JSX.Element => {
         setStatus("準備OK");
         return;
       }
+      const data = await response.json();
+      setSession(data.session_id);
 
       setStatus("マッチング成立！");
       setIsMatching(false);
@@ -52,7 +59,9 @@ const MatchMaking = (): JSX.Element => {
       setIsMatching(false);
     }
   };
-
+  useEffect(() => {
+      dispatch(setSessionId(session));
+  }, [session]);
   return (
     <div className={classes.main}>
       <Title titleName={PAGE_TITLE.MATCH_MAKING} />
@@ -70,14 +79,6 @@ const MatchMaking = (): JSX.Element => {
           {status}
         </Button>
         {isMatching && <Spinner />}
-        {session && (
-          <div className={classes.sessionInfo}>
-            <h3>セッション情報</h3>
-            <p>Session ID: {session.session_id}</p>
-            <p>Player1: {session.player1.id}</p>
-            <p>Player2: {session.player2.id}</p>
-          </div>
-        )}
         {isMatched && history.push(PAGE_PATH_URL.HOME)}
       </div>
     </div>

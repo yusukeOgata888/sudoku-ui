@@ -1,7 +1,9 @@
-
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useSelector } from "react-redux";
 import { RootStateType } from "../RootReducer";
 
 export const fetchSessionId = () =>
-    useSelector((state: RootStateType) => state.session.sessionId);
+  useSelector((state: RootStateType) => state.session.sessionId);
+
+export const fetchUserId = () =>
+  useSelector((state: RootStateType) => state.session.userId);

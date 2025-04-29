@@ -23,14 +23,9 @@
 }
 
 .fixedCell {
-    background-color: rgb(113, 110, 115);
-    color: hsl(0, 0%, 100%);
+    background-color: rgb(195, 192, 196);
 }
 
-.fixedSecondaryCell {
-    background-color: rgb(113, 110, 115);
-    color: hsl(0, 0%, 100%);
-}
 
 .otherAttributes {
     background-color: var(--secondary-color);

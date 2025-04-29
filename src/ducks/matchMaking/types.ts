@@ -1,4 +1,4 @@
-import { SET_SESSION_ID_ACTION } from "./actions";
+import { SET_SESSION_ID_ACTION, SET_USER_ID_ACTION } from "./actions";
 
 export interface SessionResult {
   session_id: string;
@@ -15,10 +15,20 @@ export interface SessionResult {
 export type setSessionActionType = {
   type: typeof SET_SESSION_ID_ACTION;
   payload: {
-    sessionId: string
+    sessionId: string;
   };
-}
+};
+
+export type setUserIdActionType = {
+  type: typeof SET_USER_ID_ACTION;
+  payload: {
+    userId: string;
+  };
+};
 
 export interface SessionActionState {
   sessionId: string;
+  userId: string;
 }
+
+export type MatchingActionTypes = setSessionActionType | setUserIdActionType;

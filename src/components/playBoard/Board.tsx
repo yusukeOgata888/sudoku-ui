@@ -14,9 +14,9 @@ import {
 import { CellAttribute } from "../../ducks/playBoard/types";
 import { AppThunkDispatch } from "../../ducks/RootReducer";
 import classes from "./Board.module.css";
-import useWebSocket from 'react-use-websocket';
+import useWebSocket, { ReadyState } from "react-use-websocket";
 import { SOCKET_API_HOST } from "../../utilities/const";
-import { fetchSessionId } from "../../ducks/matchMaking";
+import { fetchSessionId, fetchUserId } from "../../ducks/matchMaking";
 
 /**
  * 数独ボードのコンポーネント
@@ -41,43 +41,36 @@ const Board = (): JSX.Element => {
   const numberAtPushed = fetchNumberAtPushedSelector();
   const numberForView = fetchNumberForViewSelector();
   const sessionId: string = fetchSessionId();
+  const userId: string = fetchUserId();
   type boardResponseModel = {
     CellIndex: number;
     CellNumber: number;
   };
   const [responseData, setResponseData] = useState([] as boardResponseModel[]);
   const [fixedList, setfixedList] = useState([] as boolean[]);
-  
+
   const socketUrl = `ws://${SOCKET_API_HOST.DEV}/ws?sessionID=${sessionId}`;
   console.log("socketUrl", socketUrl);
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, {
     shouldReconnect: () => true,
     onOpen: () => {
       console.log("WebSocket connected!");
-      sendMessage(JSON.stringify({ type: "getInitialBoard" })); // 初期ボード要求
     },
-  
   });
-
-
-  const createFixedList = (fixedData: boardResponseModel[]) => {
-    let fixedList = Array(81).fill(false);
-    for (let i = 0; i < fixedData.length; i++) {
-      fixedList[fixedData[i].CellIndex] = true;
-    }
-    setfixedList(fixedList);
-  };
 
   const initialize = (data: boardResponseModel[]) => {
-  let tmp: Number[] = Array(82).fill(0); // 0番目使わないため82個用意
-
-  data.forEach(cell => {
-    tmp[cell.CellIndex] = cell.CellNumber;
-  });
-
-  dispatch(setNumberForView(tmp));
-  console.log("initialize完了", tmp);
-  setInit(false);
+    let tmp: Number[] = Array(82).fill(null); // 0番目使わないため82個用意
+    let fixedList = Array(81).fill(false);
+    data.forEach((cell) => {
+      if (cell.CellNumber !== 0) {
+        fixedList[cell.CellIndex] = true;
+        tmp[cell.CellIndex] = cell.CellNumber;
+      }
+    });
+    setfixedList(fixedList);
+    dispatch(setNumberForView(tmp));
+    console.log("initialize完了", tmp);
+    setInit(false);
   };
 
   const getTest = async () => {
@@ -226,13 +219,20 @@ const Board = (): JSX.Element => {
   };
 
   useEffect(() => {
-    console.log("lastMessage", lastMessage);
-    if (lastMessage !== null) {
-      const data = JSON.parse(lastMessage.data);
-      setResponseData(data);           
-      initialize(data);               
-      console.log("responseData", data);
-      console.log("lastMessage", lastMessage);
+    if (!lastMessage) return;
+    const msg = JSON.parse(lastMessage.data);
+    console.log("msg", msg);
+    switch (msg.type) {
+      case "gameFinished":
+        alert(`あなた：${msg.yourCorrect} マス / 相手：${msg.opponentCorrect} マス`);
+        break;
+  
+      default:
+        if (Array.isArray(msg)) {
+          initialize(msg);
+        } else {
+        }
+        break;
     }
   }, [lastMessage]);
 
@@ -245,6 +245,24 @@ const Board = (): JSX.Element => {
     setOtherAttributesList(getOtherAttributesList(ownAttribute));
   }, [numberAtPushed]);
 
+  useEffect(() => {
+    if (readyState === ReadyState.OPEN) {
+      console.log("✅ readyState is OPEN, sending getInitialBoard!");
+      sendMessage(JSON.stringify({ type: "getInitialBoard" }));
+    }
+  }, [readyState]);
+
+  useEffect(() => {
+    console.log("userId", userId);
+    if (numberAtPushed) {
+      sendMessage(JSON.stringify({
+        type: "commitUpdate",
+        userID: userId,
+        cellIndex: Number(selectedCell),
+        cellNumber: numberAtPushed
+      }));
+    }
+  }, [numberAtPushed]);
 
   return (
     <>

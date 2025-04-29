@@ -5,7 +5,7 @@ import classes from "./MatchMaking.module.css";
 import Title from "../common/title/Title";
 import { MATCHING_API_HOST, PAGE_PATH_URL,PAGE_TITLE } from "../../utilities/const";
 import { SessionResult } from "../../ducks/matchMaking/types";
-import { setSessionId } from "../../ducks/matchMaking/operations";
+import { setSessionId, setUserId } from "../../ducks/matchMaking/operations";
 import { AppThunkDispatch } from "../../ducks/RootReducer";
 import Spinner from "../common/utils/Spinner";
 import { useHistory } from "react-router";
@@ -14,7 +14,7 @@ import { useHistory } from "react-router";
 const MatchMaking = (): JSX.Element => {
   const history = useHistory();
   const dispatch: AppThunkDispatch = useDispatch();
-  const [userId, setUserId] = useState<string>("");
+  const [userId, setId] = useState<string>("");
   const [session, setSession] = useState<string>("");
   const [status, setStatus] = useState<string>("準備OK");
   const [isMatching, setIsMatching] = useState<boolean>(false);
@@ -62,6 +62,11 @@ const MatchMaking = (): JSX.Element => {
   useEffect(() => {
       dispatch(setSessionId(session));
   }, [session]);
+  useEffect(() => {
+    console.log("userId", userId);
+    dispatch(setUserId(userId));
+  },[userId]);
+
   return (
     <div className={classes.main}>
       <Title titleName={PAGE_TITLE.MATCH_MAKING} />
@@ -72,7 +77,7 @@ const MatchMaking = (): JSX.Element => {
             id="userIdInput"
             type="text"
             value={userId}
-            onChange={(e) => setUserId(e.target.value)}
+            onChange={(e) => setId(e.target.value)}
           />
         </div>
         <Button className={`btn-main ${classes.margin_left_5}`}onClick={handleMatchmaking}>
